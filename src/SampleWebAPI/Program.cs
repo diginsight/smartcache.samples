@@ -2,7 +2,6 @@
 using Diginsight.Diagnostics;
 using Diginsight;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using SampleWebAPI;
 using Diginsight.SmartCache.Externalization.ServiceBus;
 using Diginsight.SmartCache;
 using SampleWebAPI.Configuration;
@@ -29,17 +28,21 @@ public class Program
             var services = builder.Services;
             var configuration = builder.Configuration;
             var environment = builder.Environment;
+            var loggerFactory = Observability.LoggerFactory;
 
             // Add logging and opentelemetry
             services.AddObservability(configuration, environment, out IOpenTelemetryOptions openTelemetryOptions);
-
             observabilityManager.AttachTo(services);
 
             services.ConfigureClassAware<ConcurrencyOptions>(configuration.GetSection("AppSettings"))
                 .DynamicallyConfigureClassAware<ConcurrencyOptions>()
-            .VolatilelyConfigureClassAware<ConcurrencyOptions>();
-            SmartCacheBuilder smartCacheBuilder = services.AddSmartCache(configuration, environment, Observability.LoggerFactory)
-            .AddHttp();
+                .VolatilelyConfigureClassAware<ConcurrencyOptions>();
+
+            services.ConfigureClassAware<SmartCacheCoreOptions>(configuration.GetSection("Diginsight:SmartCache"));
+
+            var smartCacheBuilder = services
+                .AddSmartCache(configuration, environment, loggerFactory)
+                .AddHttp();
 
             IConfigurationSection smartCacheServiceBusConfiguration = configuration.GetSection("Diginsight:SmartCache:ServiceBus");
             if (!string.IsNullOrEmpty(smartCacheServiceBusConfiguration[nameof(SmartCacheServiceBusOptions.ConnectionString)]) &&
