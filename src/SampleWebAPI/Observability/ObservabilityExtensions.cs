@@ -96,7 +96,7 @@ public static partial class ObservabilityExtensions
         openTelemetryConfiguration.Bind(mutableOpenTelemetryOptions); logger.LogDebug("openTelemetryConfiguration.Bind(mutableOpenTelemetryOptions);");
         services.Configure<OpenTelemetryOptions>(openTelemetryConfiguration); logger.LogDebug("services.Configure<OpenTelemetryOptions>(openTelemetryConfiguration);");
 
-        services.TryAddSingleton<IActivityLoggingSampler, NameBasedActivityLoggingSampler>(); logger.LogDebug("services.TryAddSingleton<IActivityLoggingSampler, NameBasedActivityLoggingSampler>();");
+        services.TryAddSingleton<IActivityLoggingFilter, OptionsBasedActivityLoggingFilter>(); logger.LogDebug("services.TryAddSingleton<IActivityLoggingFilter, OptionsBasedActivityLoggingFilter>();");
 
         //services.TryAddEnumerable(ServiceDescriptor.Singleton<IActivityListenerRegistration, ActivitySourceDetectorRegistration>()); logger.LogDebug("services.TryAddEnumerable(ServiceDescriptor.Singleton<IActivityListenerRegistration, ActivitySourceDetectorRegistration>());");
 
@@ -182,7 +182,11 @@ public static partial class ObservabilityExtensions
                 dao =>
                 {
                     dao.LogBehavior = LogBehavior.Show;
-                    dao.MeterName = assemblyName;
+                    dao.RecordSpanDuration = true;             // Singular
+                    dao.SpanDurationMeterName = assemblyName;  // SpanDuration prefix
+                    dao.SpanDurationMetricName = "diginsight.span_duration";
+                    dao.SpanDurationMetricDescription = "Duration of application spans";
+                    // dao.MetricUnit removed - no longer used
                 }
             );
 
@@ -194,7 +198,7 @@ public static partial class ObservabilityExtensions
                         IReadOnlyList<string> markers = ClassConfigurationMarkers.For(t);
                         if (markers.Contains("Diginsight.*"))
                         {
-                            dao.RecordSpanDurations = true;
+                            dao.RecordSpanDuration = true;
                         }
                     }
                 )
@@ -216,14 +220,12 @@ public static partial class ObservabilityExtensions
         logger.LogDebug("openTelemetryOptions.EnableMetrics: {openTelemetryOptions.EnableMetrics}", openTelemetryOptions.EnableMetrics);
         if (openTelemetryOptions.EnableMetrics)
         {
+            // Add the metric recorder (same as before)
             services.AddSpanDurationMetricRecorder(); logger.LogDebug("services.AddSpanDurationMetricRecorder();");
-            services.TryAddSingleton<ISpanDurationMetricRecorderSettings, NameBasedSpanDurationMetricRecorderSettings>(); logger.LogDebug("services.TryAddSingleton<ISpanDurationMetricRecorderSettings, NameBasedSpanDurationMetricRecorderSettings>();");
-
-            if (!services.Any(static x => x.ServiceType == typeof(DecoratedSpanDurationMetricRecorderSettingsMarker)))
-            {
-                services.AddSingleton<DecoratedSpanDurationMetricRecorderSettingsMarker>(); logger.LogDebug("services.AddSingleton<DecoratedSpanDurationMetricRecorderSettingsMarker>();");
-                services.Decorate<ISpanDurationMetricRecorderSettings, DecoratorTagsSpanDurationMetricRecorderSettings>(); logger.LogDebug("services.Decorate<ISpanDurationMetricRecorderSettings, DecoratorTagsSpanDurationMetricRecorderSettings>();");
-            }
+            services.TryAddSingleton<IOptionsBasedMetricRecordingFilterOptions, OptionsBasedMetricRecordingFilterOptions>(); logger.LogDebug("services.TryAddSingleton<IOptionsBasedMetricRecordingFilterOptions, OptionsBasedMetricRecordingFilterOptions>();");
+            services.TryAddSingleton<IMetricRecordingFilter, OptionsBasedMetricRecordingFilter>(); logger.LogDebug("services.TryAddSingleton<IMetricRecordingFilter, OptionsBasedMetricRecordingFilter>();");
+            services.TryAddSingleton<IOptionsBasedMetricRecordingEnricherOptions, OptionsBasedMetricRecordingEnricherOptions>(); logger.LogDebug("services.TryAddSingleton<IOptionsBasedMetricRecordingEnricherOptions, OptionsBasedMetricRecordingEnricherOptions>();");
+            services.TryAddSingleton<IMetricRecordingEnricher, OptionsBasedMetricRecordingEnricher>(); logger.LogDebug("services.TryAddSingleton<IMetricRecordingEnricher, OptionsBasedMetricRecordingEnricher>();");
 
             openTelemetryBuilder.WithMetrics(
                 meterProviderBuilder =>

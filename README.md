@@ -8,7 +8,7 @@ The samples cover a wide range of use cases and demonstrate the capabilities and
 # GETTING STARTED
 
 ## Step 01: clone the repo and open SmartCache.Samples.sln solution
-![alt text](<src/docs/001.03 - smartcache_samples repo.png>)
+![alt text](<src/docs/images/001.03 - smartcache_samples repo.png>)
 
 you can use the following solutions:
 - __SmartCache.Samples.sln__ to run the samples using diginsight as a package reference.
@@ -19,19 +19,19 @@ you can use the following solutions:
 ## Step 02: run SampleWebApi and call getplants operation
 
 After running  the sample you'll obtain se __service swagger__ shown: 
-![alt text](<src/docs/002.01a - service started.png>)
+![alt text](<src/docs/images/002.01a - service started.png>)
 
 After calling the operation your `%userprofile%\LogFiles\Diginsight` folder will contain the `SampleWebApi` __log file__:
-![alt text](<src/docs/002.01b - SampleWebApi log file.png>)
+![alt text](<src/docs/images/002.01b - SampleWebApi log file.png>)
 
 Please note the call has a __cache miss__ from `PlantsController.GetPlantsAsync` and latency is __over 1 second__ when obtaining data from ``PlantsController.GetPlantsImplAsync``.
-![alt text](<src/docs/002.02b - cache miss log.png>)
+![alt text](<src/docs/images/002.02b - cache miss log.png>)
 
 
 ## Step 02:call getplants operation a second time
 The second time you call `PlantsController.GetPlantsAsync` you'll get a __cache hit__ and latency will be __5ms__.
 
-![alt text](<src/docs/003.01 - cache miss log.png>)
+![alt text](<src/docs/images/003.01 - cache miss log.png>)
 
 # Reference 
 The following articles discuss the details of `Diginsight.SmartCache` use and configuration:
