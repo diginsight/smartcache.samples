@@ -21,7 +21,7 @@
     <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.*" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.*" />
 
-    <PackageReference Include="Scrutor" Version="6.*">
+    <PackageReference Include="Scrutor" Version="7.*">
       <PrivateAssets>contentfiles; analyzers; build; compile</PrivateAssets>
     </PackageReference>
 
